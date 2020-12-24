@@ -25,6 +25,5 @@ for i, code in enumerate(codes):
                               output="주식일봉차트조회",
                               next=0)
     out_name = f"{code}.xlsx"
-    print(df)
-    df.to_excel(out_name)
+    print(df['현재가'][0])
     time.sleep(3.6)
