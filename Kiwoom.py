@@ -203,7 +203,9 @@ if __name__ == "__main__":
     kiwoom.comm_connect()
 
     account_number = kiwoom.get_login_info("ACCNO")
+    print(account_number)
     account_number = account_number.split(';')[0]
+    print(account_number)
 
-    kiwoom.set_input_value("계좌번호", account_number)
-    kiwoom.comm_rq_data("opw00018_req", "opw00018", 0, "2000")
+    #kiwoom.set_input_value("계좌번호", account_number)
+    #kiwoom.comm_rq_data("opw00018_req", "opw00018", 0, "2000")
