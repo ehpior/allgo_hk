@@ -43,10 +43,17 @@ class MyWindow(QMainWindow):
         self.text_edit.append("종목코드: " + code)
 
         # SetInputValue
-        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "종목코드", code)
+        #self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "종목코드", code)
 
         # CommRqData
-        self.kiwoom.dynamicCall("CommRqData(QString, QString, int, QString)", "opt10001_req", "opt10001", 0, "0101")
+        #self.kiwoom.dynamicCall("CommRqData(QString, QString, int, QString)", "opt10001_req", "opt10001", 0, "0101")
+
+
+        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "시간일자구분", "1")
+        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "금액수량구분", "1")
+        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "종목코드", "005930")
+        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "날짜", "20210112")
+        self.kiwoom.dynamicCall("CommRqData(QString, QString, int, QString)", "opt90008_req", "opt90008", 0, "0101")
 
     def receive_trdata(self, screen_no, rqname, trcode, recordname, prev_next, data_len, err_code, msg1, msg2):
         if rqname == "opt10001_req":

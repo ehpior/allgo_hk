@@ -31,6 +31,16 @@ class opt10081(Structure):
                 ("high", c_uint32),
                 ("low", c_uint32)]
 
+class opt10082(Structure):
+    _fields_ = [("code", c_char * 6),   #종목코드
+                ("price", c_uint32),    #현재가
+                ("volume", c_uint32),   #거래량
+                ("amount", c_uint32),   #거래대금
+                ("date", c_char * 8),   #일자
+                ("open", c_uint32),     #시가
+                ("high", c_uint32),     #고가
+                ("low", c_uint32)]      #저가
+
 
 def testhk():
     kiwoom = Kiwoom()
@@ -61,10 +71,20 @@ def testhk():
 
         #for i in range(len(df.index)):
         for i in range(3):
-            opt10081_hk = opt10081(i, buff.encode(), int(df['거래량'][i]), int(df['거래대금'][i]), int(df['일자'][i]), int(df['시가'][i]), int(df['고가'][i]), int(df['저가'][i]))
+            #opt10081_hk = opt10081(i, buff.encode(), int(df['거래량'][i]), int(df['거래대금'][i]),
+            #                       int(df['일자'][i]), int(df['시가'][i]), int(df['고가'][i]), int(df['저가'][i]))
+
+            opt10082_hk = opt10082(buff.encode(), int(df['현재가'][i]), int(df['거래량'][i]), int(df['거래대금'][i]),
+                                   df['일자'][i].encode(), int(df['시가'][i]), int(df['고가'][i]), int(df['저가'][i]))
             #print(sizeof(opt10081_hk))
-            nsent = s.send(opt10081_hk)
+            #nsent = s.send(opt10081_hk)
+            #print("Send %d %d bytes" % (i, nsent))
+            nsent = s.send(opt10082_hk)
             print("Send %d %d bytes" % (i, nsent))
+            print(sys.getsizeof(buff.encode()), sys.getsizeof(int(df['현재가'][i])),
+                sys.getsizeof(int(df['거래량'][i])), sys.getsizeof(int(df['거래대금'][i])),
+                sys.getsizeof(df['일자'][i].encode()), sys.getsizeof(int(df['시가'][i])),
+                sys.getsizeof(int(df['고가'][i])), sys.getsizeof(int(df['저가'][i])))
             #print("")
 
     finally:

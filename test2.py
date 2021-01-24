@@ -36,8 +36,8 @@ def testhk():
     try:
         for i in range(5):
             print("")
-            #payload_out = Payload(1, i, random.uniform(-10, 30))
-            payload_out = Payload(1, 0, 0, 0)
+            payload_out = Payload(1, i, random.uniform(-10, 30))
+            #payload_out = Payload(1, 0, 0, 0)
             print("Sending id=%d, counter=%d, temp=%f" % (payload_out.id,
                                                         payload_out.counter,
                                                         payload_out.temp))
