@@ -1,12 +1,7 @@
-from pykiwoom.kiwoom import *
 import datetime
-import time
-from ctypes import *
+from struct import pack
 
-def stockData(kiwoom, code):
-    # 로그인
-    #kiwoom = Kiwoom()
-    #kiwoom.CommConnect()
+def tr_opt10081(kiwoom, code):
 
     # 문자열로 오늘 날짜 얻기
     now = datetime.datetime.now()
@@ -20,10 +15,9 @@ def stockData(kiwoom, code):
                               output="주식일봉차트조회",
                               next=0)
 
-    #out_name = f"{code}.xlsx"
-    #print(df)
-    #print("["+df['종목코드'][1]+"]")
-    #df.to_excel(out_name)
-    #time.sleep(3.6)
+    output = pack('<6s iii 8s iii', code.encode(), int(df['현재가'][0]),
+                int(df['거래량'][0]), int(df['거래대금'][0]),
+                df['일자'][0].encode(), int(df['시가'][0]),
+                int(df['고가'][0]), int(df['저가'][0]))
 
-    return df
+    return output
