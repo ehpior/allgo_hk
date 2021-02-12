@@ -24,6 +24,7 @@ class Payload(Structure):
                 ("temp", c_float),("temp2", c_float)]
 
 class opt10081(Structure):
+    _pack_ = 1
     _fields_ = [("idx", c_uint32),
                 ("code", c_char * 6),
                 ("vol", c_uint32),
@@ -34,6 +35,7 @@ class opt10081(Structure):
                 ("low", c_uint32)]
 
 class opt10082(Structure):
+    _pack_ = 1
     _fields_ = [("code", c_char * 6),   #종목코드
                 ("price", c_uint32),    #현재가
                 ("volume", c_uint32),   #거래량
@@ -48,7 +50,7 @@ def testhk():
     kiwoom = Kiwoom()
     kiwoom.CommConnect()
 
-    server_addr = ('192.168.0.26', 8888)
+    server_addr = ('192.168.5.173', 8888)
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(server_addr)
@@ -66,6 +68,7 @@ def testhk():
             buff = conn.recv(10)
             print("start")
             buff = buff.decode()
+            #buff = "005930"
             print("end")
 
             print("")

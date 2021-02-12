@@ -84,6 +84,7 @@ class MyWindow(QMainWindow):
 
         if real_type == "종목프로그램매매":  ##   ' won' 금액    →   단위당 백만원
             print("종목프로그램매매")
+            print(data)
             #name = self.code_to_name[code]
             timess = self.GetCommRealData(code, 20)
             sell_vol = self.GetCommRealData(code, 202)
