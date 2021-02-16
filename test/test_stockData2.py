@@ -18,10 +18,6 @@ from ctypes import *
 
 
 """ This class defines a C-like struct """
-class Payload(Structure):
-    _fields_ = [("id", c_uint32),
-                ("counter", c_uint32),
-                ("temp", c_float),("temp2", c_float)]
 
 class opt10081(Structure):
     _pack_ = 1
