@@ -48,12 +48,12 @@ class MyWindow(QMainWindow):
 
         try:
             self.s.listen(3)
-            self.conn, self.addr = self.s.accept()
+            #self.conn, self.addr = self.s.accept()
         except:
             print("ERROR: Connection to %s refused" % repr(self.server_addr))
             sys.exit(1)
 
-        print("accepted %s", self.addr)
+        #print("accepted %s", self.addr)
 
     def btn_clicked(self):
 
@@ -76,7 +76,10 @@ class MyWindow(QMainWindow):
 
     def btn2_clicked(self):
         self.ret = self.ocx.dynamicCall("GetCodeListByMarket(QString)", ["0"])
+        with open('../real/codes.txt', 'w') as f:
+            f.write(self.ret)
         self.ret = self.ret.split(';')
+
         print(self.ret)
         print(self.ret.index("005930"))
         print(len(self.ret))

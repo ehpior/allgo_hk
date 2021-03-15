@@ -46,7 +46,7 @@ def testhk():
     kiwoom = Kiwoom()
     kiwoom.CommConnect()
 
-    server_addr = ('192.168.5.173', 8888)
+    server_addr = ('192.168.0.26', 8888)
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(server_addr)
