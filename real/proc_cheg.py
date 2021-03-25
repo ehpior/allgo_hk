@@ -26,13 +26,21 @@ class MyWindow(QMainWindow):
         self.setWindowTitle("Real")
         self.setGeometry(300, 300, 300, 400)
 
-        btn = QPushButton("Register", self)
+        btn = QPushButton("getStockList", self)
         btn.move(20, 20)
-        btn.clicked.connect(self.btn_clicked)
+        btn.clicked.connect(self.btn_getStockList)
 
-        btn2 = QPushButton("DisConnect", self)
+        btn2 = QPushButton("registerRealData", self)
         btn2.move(20, 100)
-        btn2.clicked.connect(self.btn2_clicked)
+        btn2.clicked.connect(self.btn_registerRealData)
+
+        btn3 = QPushButton("testSendChegData", self)
+        btn3.move(20, 160)
+        btn3.clicked.connect(self.btn_testSendChegData)
+
+        btn4 = QPushButton("testSendProgramData", self)
+        btn4.move(20, 240)
+        btn4.clicked.connect(self.btn_testSendProgramData)
 
         self.ocx = QAxWidget("KHOPENAPI.KHOpenAPICtrl.1")
         self.ocx.OnEventConnect.connect(self._handler_login)
@@ -40,54 +48,55 @@ class MyWindow(QMainWindow):
         self.ocx.OnReceiveTrData.connect(self.receive_trdata)
         self.CommmConnect()
 
+        self.cheg_addr = ('172.20.10.2', 7777)
+        self.program_addr = ('172.20.10.2', 8888)
+
         #tcp
         #self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         #udp
         self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-        #self.s.bind(self.server_addr)
-        #print("bind with %s" % repr(self.server_addr))
+        """
+        self.s.bind(self.server_addr)
+        print("bind with %s" % repr(self.server_addr))
 
-        """try:
+        try:
             self.s.listen(3)
             self.conn, self.addr = self.s.accept()
         except:
             print("ERROR: Connection to %s refused" % repr(self.server_addr))
-            sys.exit(1)"""
+            sys.exit(1)
 
-        #print("accepted %s", self.addr)
+        print("accepted %s", self.addr)"""
 
-    def btn_clicked(self):
-
-        print("clicked")
-
-        """self.SetRealReg("1000", ';'.join(self.ret[0:100]), "10;131", 0)
-        self.SetRealReg("1001", ';'.join(self.ret[100:200]), "10;131", 0)
-        self.SetRealReg("1002", ';'.join(self.ret[200:300]), "10;131", 0)
-        self.SetRealReg("1003", ';'.join(self.ret[300:400]), "10;131", 0)
-        self.SetRealReg("1004", ';'.join(self.ret[400:500]), "10;131", 0)"""
-
-        self.SetRealReg("1000", ';'.join(self.ret[0:100]), "10", 0)
-        self.SetRealReg("1001", ';'.join(self.ret[100:200]), "10", 0)
-        self.SetRealReg("1002", ';'.join(self.ret[200:300]), "10", 0)
-        self.SetRealReg("1003", ';'.join(self.ret[300:400]), "10", 0)
-        self.SetRealReg("1004", ';'.join(self.ret[400:500]), "10", 0)
-
-        print("finished")
-
-        """for i in range(5):
-            hk = stockData.real_cheg(int(self.ret.index("005930")), "005930".encode(), "153099".encode(), int(i), int(2), int(3), int(4), int(5),
-                                        int(6), int(7), int(8), int(9), int(10), int(11),
-                                        "8".encode(), int(13), int(14), int(15), int(16), int(17),
-                                        int(18), int(19), int(20), int(21), int(22), int(23))
-
-            nsent = self.conn.send(hk)
-            print("Send %d %d bytes" % (0, nsent))"""
-
-    def btn2_clicked(self):
+    def btn_getStockList(self):
         self.ret = self.ocx.dynamicCall("GetCodeListByMarket(QString)", ["0"]).split(';')
 
         print(len(self.ret))
+
+    def btn_registerRealData(self):
+
+        print("clicked")
+
+        self.SetRealReg("1000", ';'.join(self.ret[0:100]), "10;131", 0)
+        self.SetRealReg("1001", ';'.join(self.ret[100:200]), "10;131", 0)
+        self.SetRealReg("1002", ';'.join(self.ret[200:300]), "10;131", 0)
+        self.SetRealReg("1003", ';'.join(self.ret[300:400]), "10;131", 0)
+        self.SetRealReg("1004", ';'.join(self.ret[400:500]), "10;131", 0)
+
+        print("finished")
+
+    def btn_testSendChegData(self):
+        print("1")
+        print(self.ret)
+        cheg_data = stockData.test_cheg_data(self.ret)
+        print("test")
+        self.s.sendto(cheg_data, self.cheg_addr)
+
+    def btn_testSendProgramData(self):
+        program_data = stockData.test_program_data(self.ret)
+
+        self.s.sendto(program_data, self.program_addr)
 
     def receive_trdata(self, screen_no, rqname, trcode, recordname, prev_next, data_len, err_code, msg1, msg2):
         if rqname == "opt90008_req":
@@ -104,110 +113,67 @@ class MyWindow(QMainWindow):
             self.statusBar().showMessage("login 완료")
 
     def _handler_real_data(self, code, real_type, data):
-        #print("receive")
-        print(code)
+
         if real_type == "주식체결":
             index = int(self.ret.index(code))
-            print(index)
             stock_code = code.encode()
-            print(stock_code)
             time = (self.GetCommRealData(code, 20)).encode()
-            print(time)
-            price = int(self.GetCommRealData(code, 10))
-            print("price")
-            change_price = int(self.GetCommRealData(code, 11))
-            print("change_price")
-            print(self.GetCommRealData(code, 12))
-            #increase_rate = int(self.GetCommRealData(code, 12))
-            increase_rate = int(-1)
-            print("increase_rate")
-            sell_1 = int(self.GetCommRealData(code, 27))
-            print("sell_1")
-            buy_1 = int(self.GetCommRealData(code, 28))
-            print("buy_1")
-            volume = int(self.GetCommRealData(code, 15))
-            print("volume")
-            cul_volume = int(self.GetCommRealData(code, 13))
-            print("cul_volume")
-            cul_amount = int(self.GetCommRealData(code, 14))
-            print("cul_amount")
-            open = int(self.GetCommRealData(code, 16))
-            print("open")
-            high = int(self.GetCommRealData(code, 17))
-            print("high")
-            low = int(self.GetCommRealData(code, 18))
-            print("low")
-            print(self.GetCommRealData(code, 25))
-            #plus_minus = (self.GetCommRealData(code, 25)).encode()
-            plus_minus = "a".encode()
-            print("plus_minus")
-            a1 = int(self.GetCommRealData(code, 26))
-            print("a1")
-            a2 = int(self.GetCommRealData(code, 29))
-            print("a2")
-            print(self.GetCommRealData(code, 30))
-            #a3 = int(self.GetCommRealData(code, 30))
-            a3 = int(-1)
-            print("a3")
-            print(self.GetCommRealData(code, 31))
-            #turn_over = int(self.GetCommRealData(code, 31))
-            turn_over = int(-1)
-            print("turn_over")
-            a4 = int(self.GetCommRealData(code, 32))
-            print("a4")
-            print(self.GetCommRealData(code, 228))
-            #volume_power = int(self.GetCommRealData(code, 228))
-            volume_power = int(-1)
-            print("volume_power")
-            capitalization = int(self.GetCommRealData(code, 311))
-            print("capitalization")
-            market = int(self.GetCommRealData(code, 290))
-            print("market")
-            a5 = int(self.GetCommRealData(code, 691))
-            print("a5")
-            high_time = int(self.GetCommRealData(code, 567))
-            print("high_time")
-            low_time = int(self.GetCommRealData(code, 568))
-            print("low_time")
+            price = float(self.GetCommRealData(code, 10))
+            change_price = float(self.GetCommRealData(code, 11))
+            increase_rate = float(self.GetCommRealData(code, 12))
+            sell_1 = float(self.GetCommRealData(code, 27))
+            buy_1 = float(self.GetCommRealData(code, 28))
+            volume = float(self.GetCommRealData(code, 15))
+            cul_volume = float(self.GetCommRealData(code, 13))
+            cul_amount = float(self.GetCommRealData(code, 14))
+            open = float(self.GetCommRealData(code, 16))
+            high = float(self.GetCommRealData(code, 17))
+            low = float(self.GetCommRealData(code, 18))
+            plus_minus = float(self.GetCommRealData(code, 25))
+            a1 = float(self.GetCommRealData(code, 26))
+            a2 = float(self.GetCommRealData(code, 29))
+            a3 = float(self.GetCommRealData(code, 30))
+            turn_over = float(self.GetCommRealData(code, 31))
+            a4 = float(self.GetCommRealData(code, 32))
+            volume_power = float(self.GetCommRealData(code, 228))
+            capitalization = float(self.GetCommRealData(code, 311))
+            market = float(self.GetCommRealData(code, 290))
+            a5 = float(self.GetCommRealData(code, 691))
+            high_time = float(self.GetCommRealData(code, 567))
+            low_time = float(self.GetCommRealData(code, 568))
 
             cheg_hk = stockData.real_cheg(index, stock_code, time, price, change_price, increase_rate, sell_1, buy_1,
                                           volume, cul_volume, cul_amount, open, high, low, plus_minus,
                                           a1, a2, a3, turn_over, a4, volume_power, capitalization,
                                           market, a5, high_time, low_time)
-            print("cheg_hk..")
-            #nsent = self.conn.send(cheg_hk)
-            self.s.sendto(cheg_hk, ('192.168.56.1', 7777))
-            #print("Send %d %d bytes" % (0, nsent))
-            print("send..")
+
+            self.s.sendto(cheg_hk, self.cheg_addr)
 
         if real_type == "종목프로그램매매":  ##   ' won' 금액    →   단위당 백만원
             index = int(self.ret.index(code))
             stock_code = code.encode()
             time = (self.GetCommRealData(code, 20)).encode()
-            print(time)
-            price = int(self.GetCommRealData(code, 10))
-            plus_minus = (self.GetCommRealData(code, 25)).encode()
-            change_price = int(self.GetCommRealData(code, 11))
-            increase_rate = int(self.GetCommRealData(code, 12))
-            cul_volume = int(self.GetCommRealData(code, 13))
-            sell_volume = int(self.GetCommRealData(code, 202))
-            sell_amount = int(self.GetCommRealData(code, 204))
-            buy_volume = int(self.GetCommRealData(code, 206))
-            buy_amount = int(self.GetCommRealData(code, 208))
-            net_buy_volume = int(self.GetCommRealData(code, 210))
-            net_buy_amount = int(self.GetCommRealData(code, 212))
-            a1 = int(self.GetCommRealData(code, 213))
-            a2 = int(self.GetCommRealData(code, 214))
-            market = int(self.GetCommRealData(code, 215))
-            ticker = int(self.GetCommRealData(code, 216))
+            price = float(self.GetCommRealData(code, 10))
+            plus_minus = float(self.GetCommRealData(code, 25))
+            change_price = float(self.GetCommRealData(code, 11))
+            increase_rate = float(self.GetCommRealData(code, 12))
+            cul_volume = float(self.GetCommRealData(code, 13))
+            sell_volume = float(self.GetCommRealData(code, 202))
+            sell_amount = float(self.GetCommRealData(code, 204))
+            buy_volume = float(self.GetCommRealData(code, 206))
+            buy_amount = float(self.GetCommRealData(code, 208))
+            net_buy_volume = float(self.GetCommRealData(code, 210))
+            net_buy_amount = float(self.GetCommRealData(code, 212))
+            a1 = float(self.GetCommRealData(code, 213))
+            a2 = float(self.GetCommRealData(code, 214))
+            market = float(self.GetCommRealData(code, 215))
+            ticker = float(self.GetCommRealData(code, 216))
 
-            program_hk = stockData.real_program(index, stock_code, time, price, plus_minus, change_price, increase_rate,
-                            cul_volume, sell_volume, sell_amount, buy_volume, buy_amount, net_buy_volume,
-                            net_buy_amount, a1, a2, market, ticker)
+            program_hk = stockData.real_program(index, stock_code, time, price, plus_minus, change_price,
+                                                increase_rate, cul_volume, sell_volume, sell_amount, buy_volume,
+                                                buy_amount, net_buy_volume, net_buy_amount, a1, a2, market, ticker)
 
-            #nsent = self.conn2.send(program_hk)
-            self.s.sendto(program_hk, ('192.168.56.1', 8888))
-            #print("Send %d %d bytes" % (0, nsent))
+            self.s.sendto(program_hk, self.program_addr)
 
     def SetRealReg(self, screen_no, code_list, fid_list, real_type):
         self.ocx.dynamicCall("SetRealReg(QString, QString, QString, QString)",
