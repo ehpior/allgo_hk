@@ -87,10 +87,8 @@ class MyWindow(QMainWindow):
         print("finished")
 
     def btn_testSendChegData(self):
-        print("1")
-        print(self.ret)
         cheg_data = stockData.test_cheg_data(self.ret)
-        print("test")
+
         self.s.sendto(cheg_data, self.cheg_addr)
 
     def btn_testSendProgramData(self):
