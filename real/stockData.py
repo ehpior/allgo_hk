@@ -8,59 +8,53 @@ class real_cheg(Structure):
     _fields_ = [("index", c_uint32),
                 ("code", c_char * 6),
                 ("time", c_char * 6),
-                ("price", c_double),
-                ("change_price", c_double),
-                ("increase_rate", c_double),
-                ("sell_1", c_double),
-                ("buy_1", c_double),
-                ("volume", c_double),
-                ("cul_volume", c_double),
-                ("cul_amount", c_double),
-                ("open", c_double),
-                ("high", c_double),
-                ("low", c_double),
-                ("plus_minus", c_double),
-                ("a1", c_double),
-                ("a2", c_double),
-                ("a3", c_double),
-                ("turn_over", c_double),
-                ("a4", c_double),
-                ("volume_power", c_double),
-                ("capitalization", c_double),
-                ("market", c_double),
-                ("a5", c_double),
-                ("high_time", c_double),
-                ("low_time", c_double)]
+                ("price", c_float),
+                ("change_price", c_float),
+                ("increase_rate", c_float),
+                ("sell_1", c_float),
+                ("buy_1", c_float),
+                ("volume", c_float),
+                ("cul_volume", c_float),
+                ("cul_amount", c_float),
+                ("open", c_float),
+                ("high", c_float),
+                ("low", c_float),
+                ("plus_minus", c_float),
+                ("a1", c_float),
+                ("a2", c_float),
+                ("a3", c_float),
+                ("turn_over", c_float),
+                ("a4", c_float),
+                ("volume_power", c_float),
+                ("capitalization", c_float),
+                ("market", c_float),
+                ("a5", c_float),
+                ("high_time", c_float),
+                ("low_time", c_float)]
 
 class real_program(Structure):
     _pack_ = 1
     _fields_ = [("index", c_uint32),
                 ("code", c_char * 6),
                 ("time", c_char * 6),
-                ("price", c_double),
-                ("plus_minus", c_double),
-                ("change_price", c_double),
-                ("increase_rate", c_double),
-                ("cul_volume", c_double),
-                ("sell_volume", c_double),
-                ("sell_amount", c_double),
-                ("buy_volume", c_double),
-                ("buy_amount", c_double),
-                ("net_buy_volume", c_double),
-                ("net_buy_amount", c_double),
-                ("a1", c_double),
-                ("a2", c_double),
-                ("market", c_double),
-                ("ticker", c_double)]
+                ("price", c_float),
+                ("plus_minus", c_float),
+                ("change_price", c_float),
+                ("increase_rate", c_float),
+                ("cul_volume", c_float),
+                ("sell_volume", c_float),
+                ("sell_amount", c_float),
+                ("buy_volume", c_float),
+                ("buy_amount", c_float),
+                ("net_buy_volume", c_float),
+                ("net_buy_amount", c_float),
+                ("a1", c_float),
+                ("a2", c_float),
+                ("market", c_float),
+                ("ticker", c_float)]
 
 def test_cheg_data(codes):
-    print("11")
-    print(codes)
     rand_num = randrange(len(codes))
-    print("2")
-    print(rand_num, end=',')
-    print(codes[rand_num])
-    print("3")
     index = int(rand_num)
     # code = choice(codes).encode()
     code = codes[rand_num].encode()
@@ -88,21 +82,15 @@ def test_cheg_data(codes):
     a5 = float(randrange(50000))
     high_time = float(randrange(50000))
     low_time = float(randrange(50000))
-    print("4")
     cheg_hk = real_cheg(index, code, time, price, change_price, increase_rate, sell_1, buy_1,
                                        volume, cul_volume, cul_amount, open, high, low, plus_minus,
                                        a1, a2, a3, turn_over, a4, volume_power, capitalization,
                                        market, a5, high_time, low_time)
-    print("5")
     return cheg_hk
     #s.sendto(cheg_hk, ('172.20.10.2', 7777))
 
 def test_program_data(codes):
     rand_num = randrange(len(codes))
-
-    print(rand_num, end=',')
-    print(codes[rand_num])
-
     index = int(rand_num)
     # code = choice(codes).encode()
     code = codes[rand_num].encode()
