@@ -26,9 +26,9 @@ class MyWindow(QMainWindow):
         self.setWindowTitle("Real")
         self.setGeometry(300, 300, 300, 400)
 
-        btn = QPushButton("getStockList", self)
-        btn.move(20, 20)
-        btn.clicked.connect(self.btn_getStockList)
+        btn1 = QPushButton("getStockList", self)
+        btn1.move(20, 20)
+        btn1.clicked.connect(self.btn_getStockList)
 
         btn2 = QPushButton("registerRealData", self)
         btn2.move(20, 100)
@@ -48,8 +48,8 @@ class MyWindow(QMainWindow):
         self.ocx.OnReceiveTrData.connect(self.receive_trdata)
         self.CommmConnect()
 
-        self.cheg_addr = ('172.20.10.2', 7777)
-        self.program_addr = ('172.20.10.2', 8888)
+        self.cheg_addr = ('10.211.55.2', 7777)
+        self.program_addr = ('10.211.55.2', 8888)
 
         #tcp
         #self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
