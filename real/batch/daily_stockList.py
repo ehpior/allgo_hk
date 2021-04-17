@@ -14,7 +14,7 @@ class Kiwoom(QAxWidget):  # QAxWidget 클래스로부터 dynamicCall, setControl
         self.db = pymysql.connect(
             user='jhk',
             passwd='wjdgusrl34',
-            host='192.168.0.10',
+            host='10.211.55.2',
             db='allgo',
             charset='utf8'
         )
@@ -50,24 +50,29 @@ class Kiwoom(QAxWidget):  # QAxWidget 클래스로부터 dynamicCall, setControl
         kosdaq_code_list = self.dynamicCall("GetCodeListByMarket(QString)", ["10"]).split(';')
         kosdaq_code_name_list = []
 
-        for index, code in enumerate(kospi_code_list):
+        print("1")
+        stock_code_list = []
+        stock_code_list.extend(kospi_code_list)
+        stock_code_list.extend(kosdaq_code_list)
+        print("2")
+        stock_code_name_list = []
+
+        stock_code_list.sort()
+        print(len(stock_code_list))
+        for index, code in enumerate(stock_code_list):
             name = self.dynamicCall("GetMasterCodeName(QString)", [code])  # 맨뒤는 종목코드, 코드에 따른 종목명을 가져옴
             if not (code and name):
                 continue
-            kospi_code_name_list.append(tuple([index, code, name, "0"]))
+            market = "-1"
+            if code in kospi_code_list:
+                market = "0"
+            elif code in kosdaq_code_list:
+                market = "10"
+            stock_code_name_list.append(tuple([index, code, name, market]))
 
-        for index, code in enumerate(kosdaq_code_list):
-            name = self.dynamicCall("GetMasterCodeName(QString)", [code])  # 맨뒤는 종목코드, 코드에 따른 종목명을 가져옴
-            if not (code and name):
-                continue
-            kosdaq_code_name_list.append(tuple([index, code, name, "10"]))
-
-        for item in kospi_code_name_list:
-            print(item)
 
         sql = "insert into STOCK_LIST values(%s, %s, %s, %s)"
-        self.cursor.executemany(sql, kospi_code_name_list)
-        self.cursor.executemany(sql, kosdaq_code_name_list)
+        self.cursor.executemany(sql, stock_code_name_list)
         self.db.commit()
 
         exit(0)

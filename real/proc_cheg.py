@@ -20,6 +20,14 @@ from ctypes import *
 
 """ This class defines a C-like struct """
 
+def toFloat(item):
+    result = 0.0
+    try:
+        result = float(item)
+    except:
+        pass
+    return result
+
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -71,8 +79,12 @@ class MyWindow(QMainWindow):
 
     def btn_getStockList(self):
         self.ret = self.ocx.dynamicCall("GetCodeListByMarket(QString)", ["0"]).split(';')
+        self.ret2 = self.ocx.dynamicCall("GetCodeListByMarket(QString)", ["10"]).split(';')
 
+        self.stock_len1 = int(len(self.ret))
+        self.stock_len2 = int(len(self.ret2))
         print(len(self.ret))
+        print(len(self.ret2))
 
     def btn_registerRealData(self):
 
@@ -83,6 +95,33 @@ class MyWindow(QMainWindow):
         self.SetRealReg("1002", ';'.join(self.ret[200:300]), "10;131", 0)
         self.SetRealReg("1003", ';'.join(self.ret[300:400]), "10;131", 0)
         self.SetRealReg("1004", ';'.join(self.ret[400:500]), "10;131", 0)
+        self.SetRealReg("1005", ';'.join(self.ret[500:600]), "10;131", 0)
+        self.SetRealReg("1006", ';'.join(self.ret[600:700]), "10;131", 0)
+        self.SetRealReg("1007", ';'.join(self.ret[700:800]), "10;131", 0)
+        self.SetRealReg("1008", ';'.join(self.ret[800:900]), "10;131", 0)
+        self.SetRealReg("1009", ';'.join(self.ret[900:1000]), "10;131", 0)
+        self.SetRealReg("1010", ';'.join(self.ret[1000:1100]), "10;131", 0)
+        self.SetRealReg("1011", ';'.join(self.ret[1100:1200]), "10;131", 0)
+        self.SetRealReg("1012", ';'.join(self.ret[1200:1300]), "10;131", 0)
+        self.SetRealReg("1013", ';'.join(self.ret[1300:1400]), "10;131", 0)
+        self.SetRealReg("1014", ';'.join(self.ret[1400:1500]), "10;131", 0)
+        self.SetRealReg("1015", ';'.join(self.ret[1500:1577]), "10;131", 0)
+
+        self.SetRealReg("1016", ';'.join(self.ret2[0:100]), "10;131", 0)
+        self.SetRealReg("1017", ';'.join(self.ret2[100:200]), "10;131", 0)
+        self.SetRealReg("1018", ';'.join(self.ret2[200:300]), "10;131", 0)
+        self.SetRealReg("1019", ';'.join(self.ret2[300:400]), "10;131", 0)
+        self.SetRealReg("1020", ';'.join(self.ret2[400:500]), "10;131", 0)
+        self.SetRealReg("1021", ';'.join(self.ret2[500:600]), "10;131", 0)
+        self.SetRealReg("1022", ';'.join(self.ret2[600:700]), "10;131", 0)
+        self.SetRealReg("1023", ';'.join(self.ret2[700:800]), "10;131", 0)
+        self.SetRealReg("1024", ';'.join(self.ret2[800:900]), "10;131", 0)
+        self.SetRealReg("1025", ';'.join(self.ret2[900:1000]), "10;131", 0)
+        self.SetRealReg("1026", ';'.join(self.ret2[1000:1100]), "10;131", 0)
+        self.SetRealReg("1027", ';'.join(self.ret2[1100:1200]), "10;131", 0)
+        self.SetRealReg("1028", ';'.join(self.ret2[1200:1300]), "10;131", 0)
+        self.SetRealReg("1029", ';'.join(self.ret2[1300:1400]), "10;131", 0)
+        self.SetRealReg("1030", ';'.join(self.ret2[1400:1498]), "10;131", 0)
 
         print("finished")
 
@@ -113,32 +152,59 @@ class MyWindow(QMainWindow):
     def _handler_real_data(self, code, real_type, data):
 
         if real_type == "주식체결":
-            index = int(self.ret.index(code))
+            index = 0
+            try:
+                index = int(self.ret.index(code))
+            except ValueError:
+                index = int(int(self.stock_len1) + int(self.ret2.index(code)))
             stock_code = code.encode()
             time = (self.GetCommRealData(code, 20)).encode()
             price = float(self.GetCommRealData(code, 10))
-            change_price = float(self.GetCommRealData(code, 11))
-            increase_rate = float(self.GetCommRealData(code, 12))
-            sell_1 = float(self.GetCommRealData(code, 27))
-            buy_1 = float(self.GetCommRealData(code, 28))
-            volume = float(self.GetCommRealData(code, 15))
-            cul_volume = float(self.GetCommRealData(code, 13))
-            cul_amount = float(self.GetCommRealData(code, 14))
-            open = float(self.GetCommRealData(code, 16))
-            high = float(self.GetCommRealData(code, 17))
-            low = float(self.GetCommRealData(code, 18))
-            plus_minus = float(self.GetCommRealData(code, 25))
-            a1 = float(self.GetCommRealData(code, 26))
-            a2 = float(self.GetCommRealData(code, 29))
-            a3 = float(self.GetCommRealData(code, 30))
-            turn_over = float(self.GetCommRealData(code, 31))
-            a4 = float(self.GetCommRealData(code, 32))
-            volume_power = float(self.GetCommRealData(code, 228))
-            capitalization = float(self.GetCommRealData(code, 311))
-            market = float(self.GetCommRealData(code, 290))
-            a5 = float(self.GetCommRealData(code, 691))
-            high_time = float(self.GetCommRealData(code, 567))
-            low_time = float(self.GetCommRealData(code, 568))
+
+            """change_price = toFloat((50000))
+            increase_rate = toFloat((50000))
+            sell_1 = float((50000))
+            buy_1 = float((50000))
+            volume = float((50000))
+            cul_volume = float((50000))
+            cul_amount = float((50000))
+            open = float((50000))
+            high = float((50000))
+            low = float((50000))
+            plus_minus = float((50000))
+            a1 = float((50000))
+            a2 = float((50000))
+            a3 = float((50000))
+            turn_over = float((50000))
+            a4 = float((50000))
+            volume_power = float((50000))
+            capitalization = float((50000))
+            market = float((50000))
+            a5 = float((50000))
+            high_time = float((50000))
+            low_time = float((50000))"""
+            change_price = toFloat(self.GetCommRealData(code, 11))
+            increase_rate = toFloat(self.GetCommRealData(code, 12))
+            sell_1 = toFloat(self.GetCommRealData(code, 27))
+            buy_1 = toFloat(self.GetCommRealData(code, 28))
+            volume = toFloat(self.GetCommRealData(code, 15))
+            cul_volume = toFloat(self.GetCommRealData(code, 13))
+            cul_amount = toFloat(self.GetCommRealData(code, 14))
+            open = toFloat(self.GetCommRealData(code, 16))
+            high = toFloat(self.GetCommRealData(code, 17))
+            low = toFloat(self.GetCommRealData(code, 18))
+            plus_minus = toFloat(self.GetCommRealData(code, 25))
+            a1 = toFloat(self.GetCommRealData(code, 26))
+            a2 = toFloat(self.GetCommRealData(code, 29))
+            a3 = toFloat(self.GetCommRealData(code, 30))
+            turn_over = toFloat(self.GetCommRealData(code, 31))
+            a4 = toFloat(self.GetCommRealData(code, 32))
+            volume_power = toFloat(self.GetCommRealData(code, 228))
+            capitalization = toFloat(self.GetCommRealData(code, 311))
+            market = toFloat(self.GetCommRealData(code, 290))
+            a5 = toFloat(self.GetCommRealData(code, 691))
+            high_time = toFloat(self.GetCommRealData(code, 567))
+            low_time = toFloat(self.GetCommRealData(code, 568))
 
             cheg_hk = stockData.real_cheg(index, stock_code, time, price, change_price, increase_rate, sell_1, buy_1,
                                           volume, cul_volume, cul_amount, open, high, low, plus_minus,
@@ -148,24 +214,43 @@ class MyWindow(QMainWindow):
             self.s.sendto(cheg_hk, self.cheg_addr)
 
         if real_type == "종목프로그램매매":  ##   ' won' 금액    →   단위당 백만원
-            index = int(self.ret.index(code))
+            index = 0
+            try:
+                index = int(self.ret.index(code))
+            except ValueError:
+                index = int(int(self.stock_len1) + int(self.ret2.index(code)))
             stock_code = code.encode()
             time = (self.GetCommRealData(code, 20)).encode()
-            price = float(self.GetCommRealData(code, 10))
-            plus_minus = float(self.GetCommRealData(code, 25))
-            change_price = float(self.GetCommRealData(code, 11))
-            increase_rate = float(self.GetCommRealData(code, 12))
-            cul_volume = float(self.GetCommRealData(code, 13))
-            sell_volume = float(self.GetCommRealData(code, 202))
-            sell_amount = float(self.GetCommRealData(code, 204))
-            buy_volume = float(self.GetCommRealData(code, 206))
-            buy_amount = float(self.GetCommRealData(code, 208))
-            net_buy_volume = float(self.GetCommRealData(code, 210))
-            net_buy_amount = float(self.GetCommRealData(code, 212))
-            a1 = float(self.GetCommRealData(code, 213))
-            a2 = float(self.GetCommRealData(code, 214))
-            market = float(self.GetCommRealData(code, 215))
-            ticker = float(self.GetCommRealData(code, 216))
+            """price = float((50000))
+            plus_minus = float((50000))
+            change_price = float((50000))
+            increase_rate = float((50000))
+            cul_volume = float((50000))
+            sell_volume = float((50000))
+            sell_amount = float((50000))
+            buy_volume = float((50000))
+            buy_amount = float((50000))
+            net_buy_volume = float((50000))
+            net_buy_amount = float((50000))
+            a1 = float((50000))
+            a2 = float((50000))
+            market = float((50000))
+            ticker = float((50000))"""
+            price = toFloat(self.GetCommRealData(code, 10))
+            plus_minus = toFloat(self.GetCommRealData(code, 25))
+            change_price = toFloat(self.GetCommRealData(code, 11))
+            increase_rate = toFloat(self.GetCommRealData(code, 12))
+            cul_volume = toFloat(self.GetCommRealData(code, 13))
+            sell_volume = toFloat(self.GetCommRealData(code, 202))
+            sell_amount = toFloat(self.GetCommRealData(code, 204))
+            buy_volume = toFloat(self.GetCommRealData(code, 206))
+            buy_amount = toFloat(self.GetCommRealData(code, 208))
+            net_buy_volume = toFloat(self.GetCommRealData(code, 210))
+            net_buy_amount = toFloat(self.GetCommRealData(code, 212))
+            a1 = toFloat(self.GetCommRealData(code, 213))
+            a2 = toFloat(self.GetCommRealData(code, 214))
+            market = toFloat(self.GetCommRealData(code, 215))
+            ticker = toFloat(self.GetCommRealData(code, 216))
 
             program_hk = stockData.real_program(index, stock_code, time, price, plus_minus, change_price,
                                                 increase_rate, cul_volume, sell_volume, sell_amount, buy_volume,
