@@ -81,47 +81,33 @@ class MyWindow(QMainWindow):
         self.ret = self.ocx.dynamicCall("GetCodeListByMarket(QString)", ["0"]).split(';')
         self.ret2 = self.ocx.dynamicCall("GetCodeListByMarket(QString)", ["10"]).split(';')
 
-        self.stock_len1 = int(len(self.ret))
-        self.stock_len2 = int(len(self.ret2))
-        print(len(self.ret))
-        print(len(self.ret2))
+        self.stock_list = []
+        self.stock_list.extend(self.ret)
+        self.stock_list.extend(self.ret2)
+
+        self.stock_list = list(filter(None, self.stock_list))
+        self.stock_list.sort()
+
+        print(str(len(self.ret)) + ', ' + str(len(self.ret2)) + ', ' + str(len(self.stock_list)))
 
     def btn_registerRealData(self):
 
         print("clicked")
 
-        self.SetRealReg("1000", ';'.join(self.ret[0:100]), "10;131", 0)
-        self.SetRealReg("1001", ';'.join(self.ret[100:200]), "10;131", 0)
-        self.SetRealReg("1002", ';'.join(self.ret[200:300]), "10;131", 0)
-        self.SetRealReg("1003", ';'.join(self.ret[300:400]), "10;131", 0)
-        self.SetRealReg("1004", ';'.join(self.ret[400:500]), "10;131", 0)
-        self.SetRealReg("1005", ';'.join(self.ret[500:600]), "10;131", 0)
-        self.SetRealReg("1006", ';'.join(self.ret[600:700]), "10;131", 0)
-        self.SetRealReg("1007", ';'.join(self.ret[700:800]), "10;131", 0)
-        self.SetRealReg("1008", ';'.join(self.ret[800:900]), "10;131", 0)
-        self.SetRealReg("1009", ';'.join(self.ret[900:1000]), "10;131", 0)
-        self.SetRealReg("1010", ';'.join(self.ret[1000:1100]), "10;131", 0)
-        self.SetRealReg("1011", ';'.join(self.ret[1100:1200]), "10;131", 0)
-        self.SetRealReg("1012", ';'.join(self.ret[1200:1300]), "10;131", 0)
-        self.SetRealReg("1013", ';'.join(self.ret[1300:1400]), "10;131", 0)
-        self.SetRealReg("1014", ';'.join(self.ret[1400:1500]), "10;131", 0)
-        self.SetRealReg("1015", ';'.join(self.ret[1500:1577]), "10;131", 0)
+        for i in range(len(self.stock_list)):
+            screenNo = "1" + format(i, "03")
 
-        self.SetRealReg("1016", ';'.join(self.ret2[0:100]), "10;131", 0)
-        self.SetRealReg("1017", ';'.join(self.ret2[100:200]), "10;131", 0)
-        self.SetRealReg("1018", ';'.join(self.ret2[200:300]), "10;131", 0)
-        self.SetRealReg("1019", ';'.join(self.ret2[300:400]), "10;131", 0)
-        self.SetRealReg("1020", ';'.join(self.ret2[400:500]), "10;131", 0)
-        self.SetRealReg("1021", ';'.join(self.ret2[500:600]), "10;131", 0)
-        self.SetRealReg("1022", ';'.join(self.ret2[600:700]), "10;131", 0)
-        self.SetRealReg("1023", ';'.join(self.ret2[700:800]), "10;131", 0)
-        self.SetRealReg("1024", ';'.join(self.ret2[800:900]), "10;131", 0)
-        self.SetRealReg("1025", ';'.join(self.ret2[900:1000]), "10;131", 0)
-        self.SetRealReg("1026", ';'.join(self.ret2[1000:1100]), "10;131", 0)
-        self.SetRealReg("1027", ';'.join(self.ret2[1100:1200]), "10;131", 0)
-        self.SetRealReg("1028", ';'.join(self.ret2[1200:1300]), "10;131", 0)
-        self.SetRealReg("1029", ';'.join(self.ret2[1300:1400]), "10;131", 0)
-        self.SetRealReg("1030", ';'.join(self.ret2[1400:1498]), "10;131", 0)
+            setList = []
+
+            if i == (len(self.stock_list) - 1):
+                setList = self.stock_list[100*i:]
+            else:
+                setList = self.stock_list[100*i:100*(i+1)]
+
+            self.SetRealReg(screenNo, ';'.join(setList), "10;131", 0)
+
+
+        #self.SetRealReg("1000", ';'.join(self.ret[0:100]), "10;131", 0)
 
         print("finished")
 
@@ -152,11 +138,7 @@ class MyWindow(QMainWindow):
     def _handler_real_data(self, code, real_type, data):
 
         if real_type == "주식체결":
-            index = 0
-            try:
-                index = int(self.ret.index(code))
-            except ValueError:
-                index = int(int(self.stock_len1) + int(self.ret2.index(code)))
+            index = int(self.stock_list.index(code))
             stock_code = code.encode()
             time = (self.GetCommRealData(code, 20)).encode()
             price = float(self.GetCommRealData(code, 10))
@@ -214,11 +196,7 @@ class MyWindow(QMainWindow):
             self.s.sendto(cheg_hk, self.cheg_addr)
 
         if real_type == "종목프로그램매매":  ##   ' won' 금액    →   단위당 백만원
-            index = 0
-            try:
-                index = int(self.ret.index(code))
-            except ValueError:
-                index = int(int(self.stock_len1) + int(self.ret2.index(code)))
+            index = int(self.stock_list.index(code))
             stock_code = code.encode()
             time = (self.GetCommRealData(code, 20)).encode()
             """price = float((50000))

@@ -14,7 +14,7 @@ class Kiwoom(QAxWidget):  # QAxWidget 클래스로부터 dynamicCall, setControl
         self.db = pymysql.connect(
             user='jhk',
             passwd='wjdgusrl34',
-            host='10.211.55.2',
+            host='1.240.167.231',#'10.211.55.2',
             db='allgo',
             charset='utf8'
         )
@@ -45,24 +45,23 @@ class Kiwoom(QAxWidget):  # QAxWidget 클래스로부터 dynamicCall, setControl
 
     def get_all_codes_names(self):
         kospi_code_list = self.dynamicCall("GetCodeListByMarket(QString)", ["0"]).split(';')
-        kospi_code_name_list = []
 
         kosdaq_code_list = self.dynamicCall("GetCodeListByMarket(QString)", ["10"]).split(';')
-        kosdaq_code_name_list = []
 
-        print("1")
         stock_code_list = []
         stock_code_list.extend(kospi_code_list)
         stock_code_list.extend(kosdaq_code_list)
-        print("2")
-        stock_code_name_list = []
+        stock_code_list = list(filter(None, stock_code_list))
 
         stock_code_list.sort()
-        print(len(stock_code_list))
+
+        stock_code_name_list = []
+
         for index, code in enumerate(stock_code_list):
+            print(index,code)
             name = self.dynamicCall("GetMasterCodeName(QString)", [code])  # 맨뒤는 종목코드, 코드에 따른 종목명을 가져옴
-            if not (code and name):
-                continue
+            #if not (code and name):
+            #    continue
             market = "-1"
             if code in kospi_code_list:
                 market = "0"
