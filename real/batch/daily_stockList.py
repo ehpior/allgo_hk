@@ -70,7 +70,7 @@ class Kiwoom(QAxWidget):  # QAxWidget 클래스로부터 dynamicCall, setControl
             stock_code_name_list.append(tuple([index, code, name, market]))
 
 
-        sql = "insert into STOCK_LIST values(%s, %s, %s, %s)"
+        sql = "insert into stock_list values(%s, %s, %s, %s)"
         self.cursor.executemany(sql, stock_code_name_list)
         self.db.commit()
 
