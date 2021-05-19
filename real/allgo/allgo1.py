@@ -125,10 +125,10 @@ for code in codes:
 
     print(f'final[{code}] : {weighted_sum}')
 
-    final_score.append([today, 'Z', code, weighted_sum])
+    final_score.append([today, 'Z', code, round(weighted_sum, 2)])
 
 
-sql = "insert into ag_score values(%s, %s, %s, %s)"
+sql = "insert into ag_score(date, type, code, score) values(%s, %s, %s, %s)"
 cursor.executemany(sql, final_score)
 db.commit()
 
