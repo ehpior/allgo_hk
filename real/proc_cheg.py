@@ -56,8 +56,8 @@ class MyWindow(QMainWindow):
         self.ocx.OnReceiveTrData.connect(self.receive_trdata)
         self.CommmConnect()
 
-        self.cheg_addr = ('10.211.55.2', 7777)
-        self.program_addr = ('10.211.55.2', 8888)
+        self.cheg_addr = ('1.240.167.231', 7777)
+        self.program_addr = ('1.240.167.231', 8888)
 
         #tcp
         #self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

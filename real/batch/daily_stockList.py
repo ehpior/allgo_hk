@@ -69,6 +69,8 @@ class Kiwoom(QAxWidget):  # QAxWidget 클래스로부터 dynamicCall, setControl
                 market = "10"
             stock_code_name_list.append(tuple([index, code, name, market]))
 
+        sql1 = "delete from STOCK_LIST"
+        self.cursor.execute(sql1)
 
         sql = "insert into stock_list values(%s, %s, %s, %s)"
         self.cursor.executemany(sql, stock_code_name_list)
