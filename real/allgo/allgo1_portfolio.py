@@ -13,9 +13,8 @@ db = pymysql.connect(
 #cursor = db.cursor(pymysql.cursors.DictCursor)
 cursor = db.cursor(pymysql.cursors.Cursor)
 
-print(sys.argv)
-today = sys.argv[1]
-#today = '20210521'
+#today = sys.argv[1]
+today = '20210521'
 if len(today) != 8:
     print('len(today) error')
     exit(1)
@@ -24,7 +23,7 @@ dates = list()
 codes = list()
 ds = dict()
 
-sql = """SELECT CODE FROM stock_cheg WHERE DATE = %s"""
+sql = """SELECT CODE FROM stock_cheg WHERE DATE = %s and capitalization >= 2000"""
 args = [today]
 cursor.execute(sql, args)
 
@@ -36,7 +35,7 @@ for elem in cursor.fetchall():
 sql = """SELECT DATE, a.CODE, round(volume_power, 2) AS 'vp', ROUND((abs(price)-abs(OPEN))/abs(OPEN)*100, 2) AS 'today_increase_rate', 
            round(increase_rate, 2) AS 'increase_rate', abs(OPEN) AS 'open', abs(price) AS 'close', abs(high) AS 'high', abs(low) AS 'low',
            turn_over
-        FROM (SELECT CODE FROM stock_cheg WHERE DATE = %s) a
+        FROM (SELECT CODE FROM stock_cheg WHERE DATE = %s and capitalization >= 2000) a
             JOIN stock_cheg b ON b.code = a.code
         WHERE b.DATE > IFNULL((SELECT DISTINCT(DATE)
                 FROM stock_cheg
@@ -66,6 +65,19 @@ for elem in cursor.fetchall():
                     'increase_rate': tmp_increase_rate, 'open': tmp_open, 'close': tmp_close,
                     'high': tmp_high, 'low': tmp_low, 'turn_over': tmp_turn_over}
 
+print(len(codes))
+
+for code in list(codes):
+    tmp_ds = [ds[code][key]['turn_over'] for key in ds[code].keys()]
+    avg_turn_over = sum(tmp_ds) / len(tmp_ds)
+
+    if avg_turn_over >= 1.5:
+        pass
+    else:
+        del ds[code]
+        codes.remove(code)
+
+print(len(codes))
 
 a = 1
 #n = 20  ######################  계산날짜!
@@ -120,6 +132,7 @@ for code in codes:
 
         days_scores.append(t_day_score)
 
+
     if len(days_scores) < n:
         continue
 
@@ -129,6 +142,8 @@ for code in codes:
 
         weighted_value = a * (r ** (i + 1)) * discount_value * day_score
         weighted_sum += weighted_value
+
+    print(f'final[{code}] : {weighted_sum}')
 
     final_score.append([today, 'A', code, round(weighted_sum, 2)])
 
