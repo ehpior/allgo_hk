@@ -1,4 +1,4 @@
-import pymysql
+import pymysql, sys
 
 
 # mysql CRUD : https://yurimkoo.github.io/python/2019/09/14/connect-db-with-python.html
@@ -13,13 +13,17 @@ db = pymysql.connect(
 #cursor = db.cursor(pymysql.cursors.DictCursor)
 cursor = db.cursor(pymysql.cursors.Cursor)
 
-today = '20210517'
+#today = sys.argv[1]
+today = '20210521'
+if len(today) != 8:
+    print('len(today) error')
+    exit(1)
 
 dates = list()
 codes = list()
 ds = dict()
 
-sql = """SELECT CODE FROM stock_cheg WHERE DATE = %s"""
+sql = """SELECT CODE FROM stock_cheg WHERE DATE = %s and capitalization >= 2000"""
 args = [today]
 cursor.execute(sql, args)
 
@@ -29,8 +33,9 @@ for elem in cursor.fetchall():
 
 
 sql = """SELECT DATE, a.CODE, round(volume_power, 2) AS 'vp', ROUND((abs(price)-abs(OPEN))/abs(OPEN)*100, 2) AS 'today_increase_rate', 
-           round(increase_rate, 2) AS 'increase_rate', abs(OPEN) AS 'open', abs(price) AS 'close', abs(high) AS 'high', abs(low) AS 'low'
-        FROM (SELECT CODE FROM stock_cheg WHERE DATE = %s) a
+           round(increase_rate, 2) AS 'increase_rate', abs(OPEN) AS 'open', abs(price) AS 'close', abs(high) AS 'high', abs(low) AS 'low',
+           turn_over
+        FROM (SELECT CODE FROM stock_cheg WHERE DATE = %s and capitalization >= 2000) a
             JOIN stock_cheg b ON b.code = a.code
         WHERE b.DATE > IFNULL((SELECT DISTINCT(DATE)
                 FROM stock_cheg
@@ -53,11 +58,26 @@ for elem in cursor.fetchall():
     tmp_close = elem[6]
     tmp_high = elem[7]
     tmp_low = elem[8]
+    tmp_turn_over = elem[9]
 
     dates.append(tmp_date)
     ds[tmp_code][tmp_date] = {'vp': tmp_vp, 'today_increase_rate': tmp_today_increase_rate,
                     'increase_rate': tmp_increase_rate, 'open': tmp_open, 'close': tmp_close,
-                    'high': tmp_high, 'low': tmp_low}
+                    'high': tmp_high, 'low': tmp_low, 'turn_over': tmp_turn_over}
+
+print(len(codes))
+
+for code in list(codes):
+    tmp_ds = [ds[code][key]['turn_over'] for key in ds[code].keys()]
+    avg_turn_over = sum(tmp_ds) / len(tmp_ds)
+
+    if avg_turn_over >= 1.5:
+        pass
+    else:
+        del ds[code]
+        codes.remove(code)
+
+print(len(codes))
 
 a = 1
 #n = 20  ######################  계산날짜!
@@ -125,7 +145,7 @@ for code in codes:
 
     print(f'final[{code}] : {weighted_sum}')
 
-    final_score.append([today, 'Z', code, round(weighted_sum, 2)])
+    final_score.append([today, 'A', code, round(weighted_sum, 2)])
 
 
 sql = "insert into ag_score(date, type, code, score) values(%s, %s, %s, %s)"
