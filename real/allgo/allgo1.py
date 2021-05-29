@@ -3,6 +3,16 @@ import pymysql, sys
 
 # mysql CRUD : https://yurimkoo.github.io/python/2019/09/14/connect-db-with-python.html
 
+if len(sys.argv) != 2:
+    print('argv error')
+    exit(1)
+
+today = sys.argv[1]
+
+if len(today) != 8:
+    print('len(today) error')
+    exit(1)
+
 db = pymysql.connect(
     user='jhk',
     passwd='wjdgusrl34',
@@ -11,60 +21,77 @@ db = pymysql.connect(
     charset='utf8'
 )
 #cursor = db.cursor(pymysql.cursors.DictCursor)
-cursor = db.cursor(pymysql.cursors.Cursor)
+#cursor = db.cursor(pymysql.cursors.Cursor)
 
-print(sys.argv)
-today = sys.argv[1]
-#today = '20210521'
-if len(today) != 8:
-    print('len(today) error')
-    exit(1)
 
 dates = list()
 codes = list()
 ds = dict()
 
-sql = """SELECT CODE FROM stock_cheg WHERE DATE = %s"""
-args = [today]
-cursor.execute(sql, args)
+with db.cursor(pymysql.cursors.Cursor) as cursor:
 
-for elem in cursor.fetchall():
-    codes.append(elem[0])
-    ds[elem[0]] = dict()
+    ### 날짜 검사 시작
 
+    sql = """select ifnull(max(date), 0) from ag_score where type='A' and date <= %s"""
 
-sql = """SELECT DATE, a.CODE, round(volume_power, 2) AS 'vp', ROUND((abs(price)-abs(OPEN))/abs(OPEN)*100, 2) AS 'today_increase_rate', 
-           round(increase_rate, 2) AS 'increase_rate', abs(OPEN) AS 'open', abs(price) AS 'close', abs(high) AS 'high', abs(low) AS 'low',
-           turn_over
-        FROM (SELECT CODE FROM stock_cheg WHERE DATE = %s) a
-            JOIN stock_cheg b ON b.code = a.code
-        WHERE b.DATE > IFNULL((SELECT DISTINCT(DATE)
-                FROM stock_cheg
-                WHERE DATE <= %s
-                ORDER BY DATE desc
-                LIMIT 20, 1), 0)
-            AND b.date <= %s
-        ORDER BY b.DATE DESC, a.CODE ASC"""
-args = [today, today, today]
-cursor.execute(sql, args)
+    cursor.execute(sql, [today])
+    maxDate_score = cursor.fetchone()[0]
 
+    sql = """select ifnull(max(date), 0) from stock_cheg where date <= %s"""
 
-for elem in cursor.fetchall():
-    tmp_date = elem[0]
-    tmp_code = elem[1]
-    tmp_vp = elem[2]
-    tmp_today_increase_rate = elem[3]
-    tmp_increase_rate = elem[4]
-    tmp_open = elem[5]
-    tmp_close = elem[6]
-    tmp_high = elem[7]
-    tmp_low = elem[8]
-    tmp_turn_over = elem[9]
+    cursor.execute(sql, [today])
+    maxDate_stock = cursor.fetchone()[0]
 
-    dates.append(tmp_date)
-    ds[tmp_code][tmp_date] = {'vp': tmp_vp, 'today_increase_rate': tmp_today_increase_rate,
-                    'increase_rate': tmp_increase_rate, 'open': tmp_open, 'close': tmp_close,
-                    'high': tmp_high, 'low': tmp_low, 'turn_over': tmp_turn_over}
+    print(f"type : A, today : {today}, maxDate_stock : {maxDate_stock}, maxDate_score : {maxDate_score}")
+
+    if (today != maxDate_stock) or (maxDate_stock <= maxDate_score) or (maxDate_stock == 0):
+        print("date error")
+        exit(1)
+
+    ### 알고리즘 시작
+
+    sql = """SELECT CODE FROM stock_cheg WHERE DATE = %s"""
+    args = [today]
+    cursor.execute(sql, args)
+
+    for elem in cursor.fetchall():
+        codes.append(elem[0])
+        ds[elem[0]] = dict()
+
+    sql = """SELECT DATE, a.CODE, round(volume_power, 2) AS 'vp', ROUND((abs(price)-abs(OPEN))/abs(OPEN)*100, 2) AS 'today_increase_rate', 
+               round(increase_rate, 2) AS 'increase_rate', abs(OPEN) AS 'open', abs(price) AS 'close', abs(high) AS 'high', abs(low) AS 'low',
+               turn_over
+            FROM (SELECT CODE FROM stock_cheg WHERE DATE = %s) a
+                JOIN stock_cheg b ON b.code = a.code
+            WHERE b.DATE > IFNULL((SELECT DISTINCT(DATE)
+                    FROM stock_cheg
+                    WHERE DATE <= %s
+                    ORDER BY DATE desc
+                    LIMIT 20, 1), 0)
+                AND b.date <= %s
+            ORDER BY b.DATE DESC, a.CODE ASC"""
+
+    args = [today, today, today]
+    cursor.execute(sql, args)
+
+    for elem in cursor.fetchall():
+        tmp_date = elem[0]
+        tmp_code = elem[1]
+        tmp_vp = elem[2]
+        tmp_today_increase_rate = elem[3]
+        tmp_increase_rate = elem[4]
+        tmp_open = elem[5]
+        tmp_close = elem[6]
+        tmp_high = elem[7]
+        tmp_low = elem[8]
+        tmp_turn_over = elem[9]
+
+        if tmp_date not in dates:
+            dates.append(tmp_date)
+
+        ds[tmp_code][tmp_date] = {'vp': tmp_vp, 'today_increase_rate': tmp_today_increase_rate,
+                        'increase_rate': tmp_increase_rate, 'open': tmp_open, 'close': tmp_close,
+                        'high': tmp_high, 'low': tmp_low, 'turn_over': tmp_turn_over}
 
 
 a = 1
@@ -73,7 +100,7 @@ n = len(dates)
 r = 0.9
 discount_value = (1 - r) / (a * (1 - r ** n))
 
-final_score = list()
+scores = list()
 
 for code in codes:
     days_scores = list()
@@ -130,11 +157,24 @@ for code in codes:
         weighted_value = a * (r ** (i + 1)) * discount_value * day_score
         weighted_sum += weighted_value
 
-    final_score.append([today, 'A', code, round(weighted_sum, 2)])
+    scores.append((code, weighted_sum))
 
+scores = sorted(scores, key=lambda x: x[1], reverse=True)
 
-sql = "insert into ag_score(date, type, code, score) values(%s, %s, %s, %s)"
-cursor.executemany(sql, final_score)
-db.commit()
+final_scores = list()
+
+for idx, (code, score) in enumerate(scores):
+    # 랭크, 종목코드, 타입, 점수
+    final_score = (today, 'A', code, round(score, 2), idx+1)
+    final_scores.append(final_score)
+
+print(f"final_scores : {len(final_scores)}")
+
+with db.cursor(pymysql.cursors.Cursor) as cursor:
+    sql = "insert into ag_score(date, type, code, score, rank) values(%s, %s, %s, %s, %s)"
+    cursor.executemany(sql, final_scores)
+    db.commit()
+
+db.close()
 
 
