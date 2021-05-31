@@ -1,7 +1,12 @@
-import pymysql, sys
+import datetime
 
+import pymysql
+import sys
 
 # mysql CRUD : https://yurimkoo.github.io/python/2019/09/14/connect-db-with-python.html
+
+print("--------------")
+print(datetime.datetime.now())
 
 if len(sys.argv) != 2:
     print('argv error')
