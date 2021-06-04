@@ -44,6 +44,17 @@ class Kiwoom(QAxWidget):  # QAxWidget 클래스로부터 dynamicCall, setControl
         self.login_event_loop.exec_()        # 프로그램 흐름을 일시중지하고 이벤트만 처리할 수 있는 상태로 만듬
 
     def get_all_codes_names(self):
+        #[시장구분값]
+        #0: 코스피
+        #10: 코스닥
+        #3: ELW
+        #8: ETF
+        #50: KONEX
+        #4: 뮤추얼펀드
+        #5: 신주인수권
+        #6: 리츠
+        #9: 하이얼펀드
+        #30: K - OTC
         kospi_code_list = self.dynamicCall("GetCodeListByMarket(QString)", ["4"]).split(';')
 
         kosdaq_code_list = self.dynamicCall("GetCodeListByMarket(QString)", ["8"]).split(';')
