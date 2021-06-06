@@ -17,6 +17,7 @@ from pykiwoom.kiwoom import *
 from PyQt5.QtWidgets import *
 from PyQt5.QAxContainer import *
 from ctypes import *
+import redis
 
 """ This class defines a C-like struct """
 
@@ -31,23 +32,36 @@ def toFloat(item):
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Real")
-        self.setGeometry(300, 300, 300, 400)
 
-        btn1 = QPushButton("getStockList", self)
+        self.db_redis = redis.StrictRedis(host='1.240.167.231', port=6379, db=0, password='wjdgusrl34', charset="utf-8",
+                                          decode_responses=True)
+
+        self.setWindowTitle("Real")
+        self.setGeometry(300, 300, 300, 600)
+
+        btn1 = QPushButton("종목리스트 Get", self)
+        btn1.resize(200, 60)
         btn1.move(20, 20)
         btn1.clicked.connect(self.btn_getStockList)
 
-        btn2 = QPushButton("registerRealData", self)
+        btn2 = QPushButton("체결, 프로그램매매 Start", self)
+        btn2.resize(200, 60)
         btn2.move(20, 100)
         btn2.clicked.connect(self.btn_registerRealData)
 
-        btn3 = QPushButton("testSendChegData", self)
-        btn3.move(20, 160)
+        btn5 = QPushButton("장시간체크 Start", self)
+        btn5.resize(200, 60)
+        btn5.move(20, 180)
+        btn5.clicked.connect(self.btn_registerBusinessCheck)
+
+        btn3 = QPushButton("체결Data TestSend", self)
+        btn3.resize(200, 60)
+        btn3.move(20, 350)
         btn3.clicked.connect(self.btn_testSendChegData)
 
-        btn4 = QPushButton("testSendProgramData", self)
-        btn4.move(20, 240)
+        btn4 = QPushButton("프로그램Data TestSend", self)
+        btn4.resize(200, 60)
+        btn4.move(20, 430)
         btn4.clicked.connect(self.btn_testSendProgramData)
 
         self.ocx = QAxWidget("KHOPENAPI.KHOpenAPICtrl.1")
@@ -111,6 +125,11 @@ class MyWindow(QMainWindow):
 
         print("finished")
 
+    def btn_registerBusinessCheck(self):
+        self.SetRealReg("2000", "", "215;20;214", 0)
+
+        print("BusinessCheck called")
+
     def btn_testSendChegData(self):
         cheg_data = stockData.test_cheg_data(self.ret)
 
@@ -143,28 +162,6 @@ class MyWindow(QMainWindow):
             time = (self.GetCommRealData(code, 20)).encode()
             price = float(self.GetCommRealData(code, 10))
 
-            """change_price = toFloat((50000))
-            increase_rate = toFloat((50000))
-            sell_1 = float((50000))
-            buy_1 = float((50000))
-            volume = float((50000))
-            cul_volume = float((50000))
-            cul_amount = float((50000))
-            open = float((50000))
-            high = float((50000))
-            low = float((50000))
-            plus_minus = float((50000))
-            a1 = float((50000))
-            a2 = float((50000))
-            a3 = float((50000))
-            turn_over = float((50000))
-            a4 = float((50000))
-            volume_power = float((50000))
-            capitalization = float((50000))
-            market = float((50000))
-            a5 = float((50000))
-            high_time = float((50000))
-            low_time = float((50000))"""
             change_price = toFloat(self.GetCommRealData(code, 11))
             increase_rate = toFloat(self.GetCommRealData(code, 12))
             sell_1 = toFloat(self.GetCommRealData(code, 27))
@@ -199,21 +196,6 @@ class MyWindow(QMainWindow):
             index = int(self.stock_list.index(code))
             stock_code = code.encode()
             time = (self.GetCommRealData(code, 20)).encode()
-            """price = float((50000))
-            plus_minus = float((50000))
-            change_price = float((50000))
-            increase_rate = float((50000))
-            cul_volume = float((50000))
-            sell_volume = float((50000))
-            sell_amount = float((50000))
-            buy_volume = float((50000))
-            buy_amount = float((50000))
-            net_buy_volume = float((50000))
-            net_buy_amount = float((50000))
-            a1 = float((50000))
-            a2 = float((50000))
-            market = float((50000))
-            ticker = float((50000))"""
             price = toFloat(self.GetCommRealData(code, 10))
             plus_minus = toFloat(self.GetCommRealData(code, 25))
             change_price = toFloat(self.GetCommRealData(code, 11))
@@ -235,6 +217,11 @@ class MyWindow(QMainWindow):
                                                 buy_amount, net_buy_volume, net_buy_amount, a1, a2, market, ticker)
 
             self.s.sendto(program_hk, self.program_addr)
+
+        if real_type == "장시작시간":
+            gubun = self.GetCommRealData(code, 215)
+            remained_time = self.GetCommRealData(code, 214)
+            self.db_redis.set('businessDay_state', gubun)
 
     def SetRealReg(self, screen_no, code_list, fid_list, real_type):
         self.ocx.dynamicCall("SetRealReg(QString, QString, QString, QString)",

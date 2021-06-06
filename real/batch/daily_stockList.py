@@ -45,8 +45,16 @@ class Kiwoom(QAxWidget):  # QAxWidget 클래스로부터 dynamicCall, setControl
 
     def get_all_codes_names(self):
         kospi_code_list = self.dynamicCall("GetCodeListByMarket(QString)", ["0"]).split(';')
-
         kosdaq_code_list = self.dynamicCall("GetCodeListByMarket(QString)", ["10"]).split(';')
+
+        tmp_code_list3 = self.dynamicCall("GetCodeListByMarket(QString)", ["3"]).split(';')
+        tmp_code_list8 = self.dynamicCall("GetCodeListByMarket(QString)", ["8"]).split(';')
+        tmp_code_list4 = self.dynamicCall("GetCodeListByMarket(QString)", ["4"]).split(';')
+        tmp_code_list5 = self.dynamicCall("GetCodeListByMarket(QString)", ["5"]).split(';')
+        tmp_code_list6 = self.dynamicCall("GetCodeListByMarket(QString)", ["6"]).split(';')
+        tmp_code_list9 = self.dynamicCall("GetCodeListByMarket(QString)", ["9"]).split(';')
+        tmp_code_list30 = self.dynamicCall("GetCodeListByMarket(QString)", ["30"]).split(';')
+        tmp_code_list50 = self.dynamicCall("GetCodeListByMarket(QString)", ["50"]).split(';')
 
         stock_code_list = []
         stock_code_list.extend(kospi_code_list)
@@ -63,12 +71,31 @@ class Kiwoom(QAxWidget):  # QAxWidget 클래스로부터 dynamicCall, setControl
             #if not (code and name):
             #    continue
             market = "-1"
-            if code in kospi_code_list:
+            if code in tmp_code_list3:
+                market = "3"
+            elif code in tmp_code_list8:
+                market = "8"
+            elif code in tmp_code_list4:
+                market = "4"
+            elif code in tmp_code_list5:
+                market = "5"
+            elif code in tmp_code_list6:
+                market = "6"
+            elif code in tmp_code_list9:
+                market = "9"
+            elif code in tmp_code_list30:
+                market = "30"
+            elif code in tmp_code_list50:
+                market = "50"
+            elif 'ETN' in name:
+                market = "99"
+            elif code in kospi_code_list:
                 market = "0"
             elif code in kosdaq_code_list:
                 market = "10"
             stock_code_name_list.append(tuple([index, code, name, market]))
 
+        #print(stock_code_name_list)
         sql1 = "delete from STOCK_LIST"
         self.cursor.execute(sql1)
 
