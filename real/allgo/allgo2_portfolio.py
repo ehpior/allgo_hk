@@ -58,7 +58,7 @@ with db.cursor(pymysql.cursors.Cursor) as cursor:
 
     ### 알고리즘 시작
 
-    sql = """SELECT a.code, a.score, a.rank
+    sql = """SELECT a.code, d.name_kor, a.score, a.rank
         FROM ag_score a
             INNER JOIN (SELECT CODE, MAX(score) AS score
                 FROM ag_score
@@ -72,6 +72,8 @@ with db.cursor(pymysql.cursors.Cursor) as cursor:
                 GROUP BY CODE
                 HAVING COUNT(1) = 20) b ON b.code = a.code AND b.score = a.score
             LEFT JOIN ag_portfolio c ON c.code = a.code AND c.`status` = 'H'
+            INNER JOIN stock_list d ON d.code = a.code and d.market IN ('0', '10')
+            INNER JOIN stock_cheg e on e.code = a.code and e.date = a.date and e.capitalization >= 3000
         WHERE a.date = (SELECT MAX(DATE) FROM ag_score where DATE < %s)
             AND a.type = 'B'
             AND c.code IS null
@@ -87,20 +89,24 @@ with db.cursor(pymysql.cursors.Cursor) as cursor:
         exit(1)
 
     d_today['code'] = str(result[0][0])
+    d_today['stock_name'] = str(result[0][1])
 
 d_today['price'] = float(db_redis.get('stock:' + d_today['code']))
 
-
-today_stock = (today, 'A', d_today['code'], abs(d_today['price']))
+today_stock = ('B', d_today['code'], d_today['stock_name'], today, abs(d_today['price']))
 
 print(today_stock)
 
+with db.cursor(pymysql.cursors.Cursor) as cursor:
+    sql = """insert into ag_portfolio_history(p_seq, ag_type, id, sub_id, code, stock_name, date, price,
+                target_rate, loss_rate, holding_day, reason, percent, type, status) 
+            values(105, %s, (select `auto_increment` from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'ag_portfolio_history'), 
+                0, %s, %s, %s, %s, 15, -10, 40, '신규편입', 10, 'B', 'H')"""
 
-#with db.cursor(pymysql.cursors.Cursor) as cursor:
-#    sql = "insert into ag_score(date, type, code, score, rank) values(%s, %s, %s, %s, %s)"
-#    cursor.executemany(sql, final_scores)
-#    db.commit()
-#
-#db.close()
+    args = today_stock
 
+    cursor.execute(sql, args)
+    db.commit()
+
+db.close()
 
