@@ -82,14 +82,14 @@ with db.cursor(pymysql.cursors.Cursor) as cursor:
     for elem in cursor.fetchall():
         tmp_date = elem[0]
         tmp_code = elem[1]
-        tmp_vp = elem[2]
-        tmp_today_increase_rate = elem[3]
-        tmp_increase_rate = elem[4]
-        tmp_open = elem[5]
-        tmp_close = elem[6]
-        tmp_high = elem[7]
-        tmp_low = elem[8]
-        tmp_turn_over = elem[9]
+        tmp_vp = float(elem[2])
+        tmp_today_increase_rate = float(elem[3])
+        tmp_increase_rate = float(elem[4])
+        tmp_open = float(elem[5])
+        tmp_close = float(elem[6])
+        tmp_high = float(elem[7])
+        tmp_low = float(elem[8])
+        tmp_turn_over = float(elem[9])
 
         if tmp_date not in dates:
             dates.append(tmp_date)

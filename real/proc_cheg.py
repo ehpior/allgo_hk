@@ -221,6 +221,7 @@ class MyWindow(QMainWindow):
         if real_type == "장시작시간":
             gubun = self.GetCommRealData(code, 215)
             remained_time = self.GetCommRealData(code, 214)
+            print(f'businessDay_state : {gubun}, {remained_time}, [{data}]')
             self.db_redis.set('businessDay_state', gubun)
 
     def SetRealReg(self, screen_no, code_list, fid_list, real_type):

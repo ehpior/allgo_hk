@@ -63,8 +63,8 @@ with db.cursor(pymysql.cursors.Cursor) as cursor:
 
     for elem in cursor.fetchall():
         tmp_code = elem[0]
-        tmp_net_buy_amount = elem[1]
-        tmp_capitalization = elem[2]
+        tmp_net_buy_amount = float(elem[1])
+        tmp_capitalization = float(elem[2])
 
         scores.append((tmp_code, tmp_net_buy_amount / tmp_capitalization * 100))
 
