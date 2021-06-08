@@ -50,7 +50,7 @@ with db.cursor(pymysql.cursors.Cursor) as cursor:
     cursor.execute(sql, [today])
     maxDate_stock = cursor.fetchone()[0]
 
-    print(f"type : A, today : {today}, maxDate_stock : {maxDate_stock}, maxDate_score : {maxDate_score}")
+    print(f"type : B, today : {today}, maxDate_stock : {maxDate_stock}, maxDate_score : {maxDate_score}")
 
     if (maxDate_stock != maxDate_score) or (businessDay_state != 3) or (maxDate_stock == 0) or (maxDate_score == 0):
         print("datetime error")
