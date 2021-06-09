@@ -66,7 +66,7 @@ class Kiwoom(QAxWidget):  # QAxWidget 클래스로부터 dynamicCall, setControl
         stock_code_name_list = []
 
         for index, code in enumerate(stock_code_list):
-            print(index,code)
+            print(index, code)
             name = self.dynamicCall("GetMasterCodeName(QString)", [code])  # 맨뒤는 종목코드, 코드에 따른 종목명을 가져옴
             #if not (code and name):
             #    continue
@@ -95,16 +95,20 @@ class Kiwoom(QAxWidget):  # QAxWidget 클래스로부터 dynamicCall, setControl
                 market = "10"
             stock_code_name_list.append(tuple([index, code, name, market]))
 
-        #print(stock_code_name_list)
-        sql1 = "delete from STOCK_LIST"
-        self.cursor.execute(sql1)
+        try:
 
-        sql = "insert into stock_list values(%s, %s, %s, %s)"
-        self.cursor.executemany(sql, stock_code_name_list)
-        self.db.commit()
+            print(stock_code_name_list)
+            sql1 = "delete from stock_list"
+            self.cursor.execute(sql1)
+            self.db.commit()
 
-        exit(0)
+            sql = "insert into stock_list values(%s, %s, %s, %s)"
+            self.cursor.executemany(sql, stock_code_name_list)
+            self.db.commit()
 
+            exit(0)
+        except Exception as e:
+            print(e)
 
 if __name__ == "__main__":
     '''
