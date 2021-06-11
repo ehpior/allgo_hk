@@ -101,7 +101,7 @@ with db.cursor(pymysql.cursors.Cursor) as cursor:
     sql = """insert into ag_portfolio_history(p_seq, ag_type, id, sub_id, code, stock_name, date, price,
                 target_rate, loss_rate, holding_day, reason, percent, type, status) 
             values(105, %s, (select `auto_increment` from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'ag_portfolio_history'), 
-                0, %s, %s, %s, %s, 15, -10, 40, '신규편입', 10, 'B', 'H')"""
+                0, %s, %s, %s, %s, 15, -10, 15, '신규편입', 10, 'B', 'H')"""
 
     args = today_stock
 
