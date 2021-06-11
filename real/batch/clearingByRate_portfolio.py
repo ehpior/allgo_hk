@@ -40,7 +40,7 @@ dates = [today]
 with db.cursor(pymysql.cursors.Cursor) as cursor:
 
     ### 날짜 검사 시작
-    print(f"type : clearing_portfolio, today : {today}")
+    print(f"type : clearingByRate_portfolio, today : {today}")
 
     if businessDay_state != 3:
         print("datetime error")
@@ -66,54 +66,49 @@ with db.cursor(pymysql.cursors.Cursor) as cursor:
         tmp_code = elem[2]
         tmp_holding_day = elem[3]
         tmp_stock_name = elem[4]
-        tmp_average_buy_price = elem[5]
+        tmp_average_buy_price = float(elem[5])
         tmp_first_buy_date = elem[6]
 
         d.append({'id': tmp_id, 'p_seq': tmp_p_seq, 'code': tmp_code, 'holding_day': tmp_holding_day,
-                  'stock_name': tmp_stock_name, 'average_buy_price': tmp_average_buy_price,
+                  'stock_name': tmp_stock_name, 'avg_buy_price': tmp_average_buy_price,
                   'first_buy_date': tmp_first_buy_date})
 
-    max_holding_day = max(item['holding_day'] for item in d)
-
-    sql = """select distinct(date) from ag_score order by date desc limit %s"""
-
-    cursor.execute(sql, [max_holding_day - 1])
-
-    result = cursor.fetchall()
-
-    for elem in result:
-        dates.append(elem[0])
-
 final_data = []
+target_rate = 1.15
+loss_rate = 0.90
 
 for i, portfolio in enumerate(d):
-    p_holding_day = portfolio['holding_day']
 
-    if len(dates) < p_holding_day - 1:
-        continue
+    cur_price = float(abs(float(db_redis.get('stock:' + portfolio['code']))))
 
-    #print(f'result {portfolio["code"]} : {dates[p_holding_day - 1]} {portfolio["first_buy_date"]}')
+    target_price = portfolio['avg_buy_price'] * target_rate
+    loss_price = portfolio['avg_buy_price'] * loss_rate
 
-    if dates[p_holding_day - 1] == portfolio['first_buy_date']:
-        cur_price = abs(float(db_redis.get('stock:' + portfolio['code'])))
-
+    if cur_price >= target_price:
         final_data.append((portfolio['id'], portfolio['id'], portfolio['code'], portfolio['stock_name'],
-                           today, cur_price, portfolio['holding_day']))
-
+                           today, cur_price, '목표가도달'))
         print(f'[id: {portfolio["id"]}, {portfolio["stock_name"]}({portfolio["code"]}), '
-              f'avg_buy_price: {round(portfolio["avg_buy_price"])}, cur_price: {round(cur_price)}, '
-              f'holding_day: {portfolio["holding_day"]}, '
-              f'rate: {round((cur_price/portfolio["avg_buy_price"]-1)*100, 2)}], reason: 기간만료청산')
+              f'avg_buy_price: {round(portfolio["avg_buy_price"])}, '
+              f'cur_price: {round(cur_price)}, rate: {round((cur_price/portfolio["avg_buy_price"]-1)*100, 2)}, '
+              f'reason: 목표가도달]')
+
+    elif cur_price < loss_price:
+        final_data.append((portfolio['id'], portfolio['id'], portfolio['code'], portfolio['stock_name'],
+                           today, cur_price, '손절가도달'))
+        print(f'[id: {portfolio["id"]}, {portfolio["stock_name"]}({portfolio["code"]}), '
+              f'avg_buy_price: {round(portfolio["avg_buy_price"])}, '
+              f'cur_price: {round(cur_price)}, rate: {round((cur_price/portfolio["avg_buy_price"]-1)*100, 2)}, '
+              f'reason: 손절가도달]')
 
 if len(final_data) == 0:
-    print('nothing to clear')
+    #print('nothing to clear')
     exit(0)
 
 with db.cursor(pymysql.cursors.Cursor) as cursor:
     sql = """insert into ag_portfolio_history(p_seq, id, sub_id, code, stock_name, date, price,
-                holding_day, reason, percent, type, status)
+                reason, percent, type, status)
             values(105, %s, (select max(sub_id) + 1 from ag_portfolio_history as a where id = %s),
-                %s, %s, %s, %s, %s, '기간만료청산', 10, 'S', 'S')"""
+                %s, %s, %s, %s, %s, 10, 'S', 'S')"""
 
     cursor.executemany(sql, final_data)
     db.commit()
