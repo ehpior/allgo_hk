@@ -32,7 +32,7 @@ db_redis = redis.StrictRedis(host='1.240.167.231', port=6379, db=0, password='wj
 #cursor = db.cursor(pymysql.cursors.DictCursor)
 #cursor = db.cursor(pymysql.cursors.Cursor)
 
-businessDay_state = int(db_redis.get('businessDay_state'))
+businessDay_state = db_redis.get('businessDay_state')
 
 d_today = dict()
 
@@ -52,7 +52,7 @@ with db.cursor(pymysql.cursors.Cursor) as cursor:
 
     print(f"type : A, today : {today}, maxDate_stock : {maxDate_stock}, maxDate_score : {maxDate_score}")
 
-    if (maxDate_stock != maxDate_score) or (businessDay_state != 3) or (maxDate_stock == 0) or (maxDate_score == 0):
+    if (maxDate_stock != maxDate_score) or (businessDay_state != '3') or (maxDate_stock == 0) or (maxDate_score == 0):
         print("datetime error")
         exit(1)
 

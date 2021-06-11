@@ -32,7 +32,7 @@ db_redis = redis.StrictRedis(host='1.240.167.231', port=6379, db=0, password='wj
 #cursor = db.cursor(pymysql.cursors.DictCursor)
 #cursor = db.cursor(pymysql.cursors.Cursor)
 
-businessDay_state = int(db_redis.get('businessDay_state'))
+businessDay_state = db_redis.get('businessDay_state')
 
 d = []
 dates = [today]
@@ -42,7 +42,7 @@ with db.cursor(pymysql.cursors.Cursor) as cursor:
     ### 날짜 검사 시작
     print(f"type : clearingByRate_portfolio, today : {today}")
 
-    if businessDay_state != 3:
+    if businessDay_state != '3':
         print("datetime error")
         exit(1)
 
