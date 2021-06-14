@@ -40,7 +40,7 @@ with db.cursor(pymysql.cursors.Cursor) as cursor:
 
     ### 날짜 검사 시작
 
-    sql = """select ifnull(max(date), 0) from ag_score where type='A' and date <= %s"""
+    sql = """select ifnull(max(date), 0) from ag_score where type='B' and date <= %s"""
 
     cursor.execute(sql, [today])
     maxDate_score = cursor.fetchone()[0]

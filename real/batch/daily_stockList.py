@@ -97,13 +97,16 @@ class Kiwoom(QAxWidget):  # QAxWidget 클래스로부터 dynamicCall, setControl
 
         try:
 
-            print(stock_code_name_list)
+            #print(stock_code_name_list)
             sql1 = "delete from stock_list"
             self.cursor.execute(sql1)
             self.db.commit()
 
             sql = "insert into stock_list values(%s, %s, %s, %s)"
-            self.cursor.executemany(sql, stock_code_name_list)
+            self.cursor.executemany(sql, stock_code_name_list[0:1500])
+            self.db.commit()
+
+            self.cursor.executemany(sql, stock_code_name_list[1500:])
             self.db.commit()
 
             exit(0)
