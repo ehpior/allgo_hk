@@ -73,7 +73,7 @@ with db.cursor(pymysql.cursors.Cursor) as cursor:
                 HAVING COUNT(1) = 20) b ON b.code = a.code AND b.score = a.score
             LEFT JOIN ag_portfolio c ON c.code = a.code AND c.`status` = 'H'
             INNER JOIN stock_list d ON d.code = a.code and d.market IN ('0', '10')
-            INNER JOIN stock_cheg e on e.code = a.code and e.date = a.date and e.capitalization >= 3000
+            INNER JOIN stock_cheg e on e.code = a.code and e.date = a.date and e.capitalization >= 10000
         WHERE a.date = (SELECT MAX(DATE) FROM ag_score where DATE < %s)
             AND a.type = 'B'
             AND c.code IS null
