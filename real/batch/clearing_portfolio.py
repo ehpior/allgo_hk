@@ -64,13 +64,13 @@ with db.cursor(pymysql.cursors.Cursor) as cursor:
         tmp_id = elem[0]
         tmp_p_seq = elem[1]
         tmp_code = elem[2]
-        tmp_holding_day = elem[3]
+        tmp_holding_day = int(elem[3])
         tmp_stock_name = elem[4]
-        tmp_average_buy_price = elem[5]
+        tmp_average_buy_price = float(elem[5])
         tmp_first_buy_date = elem[6]
 
         d.append({'id': tmp_id, 'p_seq': tmp_p_seq, 'code': tmp_code, 'holding_day': tmp_holding_day,
-                  'stock_name': tmp_stock_name, 'average_buy_price': tmp_average_buy_price,
+                  'stock_name': tmp_stock_name, 'avg_buy_price': tmp_average_buy_price,
                   'first_buy_date': tmp_first_buy_date})
 
     max_holding_day = max(item['holding_day'] for item in d)
@@ -94,7 +94,7 @@ for i, portfolio in enumerate(d):
 
     #print(f'result {portfolio["code"]} : {dates[p_holding_day - 1]} {portfolio["first_buy_date"]}')
 
-    if dates[p_holding_day - 1] == portfolio['first_buy_date']:
+    if dates[p_holding_day - 1] >= portfolio['first_buy_date']:
         cur_price = abs(float(db_redis.get('stock:' + portfolio['code'])))
 
         final_data.append((portfolio['id'], portfolio['id'], portfolio['code'], portfolio['stock_name'],
